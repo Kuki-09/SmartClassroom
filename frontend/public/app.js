@@ -961,12 +961,25 @@ document.getElementById("sessionStartForm").addEventListener("submit", async (e)
 
 document.getElementById("sessionEndForm").addEventListener("submit", async (e) => {
   e.preventDefault();
+
+  const confirmEnd = window.confirm(
+    "Are you sure you want to end this classroom session?"
+  );
+
+  if (!confirmEnd) {
+    return;
+  }
+
   const output = document.getElementById("sessionEndOutput");
+
   try {
     const roomName = document.getElementById("sessionEndRoomSelect").value.trim();
+
     if (!roomName) {
       throw new Error("Please select room");
     }
+
+    // remaining existing code...
 
     const frameBlob = await captureCheckinFrame();
     const formData = new FormData();
