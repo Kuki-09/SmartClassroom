@@ -979,8 +979,6 @@ document.getElementById("sessionEndForm").addEventListener("submit", async (e) =
       throw new Error("Please select room");
     }
 
-    // remaining existing code...
-
     const frameBlob = await captureCheckinFrame();
     const formData = new FormData();
     formData.append("room_name", roomName);
