@@ -31,7 +31,24 @@ class EmbeddingStore:
         return int(record.get("samples", 0))
 
     def register(self, student_id: str, embedding: np.ndarray) -> int:
+        print("REGISTER FUNCTION CALLED")
         record = self._data.get(student_id)
+        for existing_id, existing_record in self._data.items():
+
+            existing_embedding = np.array(
+                existing_record["embedding"],
+                dtype=np.float32
+    )
+
+            similarity = float(
+                np.dot(embedding, existing_embedding) /
+        (np.linalg.norm(embedding) *
+         np.linalg.norm(existing_embedding) + 1e-9)
+    )
+
+        if similarity >= 0.8 and existing_id != student_id:
+            print("Duplicate face detected")
+        return -1
         if record is None:
             self._data[student_id] = {
                 "samples": 1,

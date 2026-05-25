@@ -18,6 +18,9 @@ services:
   backend-service:
     build: ./backend-service
     container_name: backend
+    depends_on:
+      db:
+        condition: service_healthy
     extra_hosts:
       - "host.docker.internal:host-gateway"
     env_file: .env
