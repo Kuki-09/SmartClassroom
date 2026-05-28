@@ -84,6 +84,55 @@ def test_initial_state():
     }
 
 
+# NEW FUNCTION ADDED HERE
+def test_embedding_roundtrip():
+    """Insert a dummy embedding and verify it can be read back correctly."""
+    print("\n🔄 Testing embedding insert/retrieve roundtrip...")
+
+    conn = mysql.connector.connect(**DB_CONFIG)
+    cursor = conn.cursor(dictionary=True)
+    student_pk = None
+
+    try:
+        cursor.execute(
+            "INSERT INTO students (name, student_id) VALUES (%s, %s)",
+            ("Test User", "TEST_001"),
+        )
+        student_pk = cursor.lastrowid
+
+        dummy_embedding = [round(i * 0.01, 4) for i in range(128)]
+        cursor.execute(
+            "INSERT INTO facial_embeddings (student_id, embedding) VALUES (%s, %s)",
+            (student_pk, json.dumps(dummy_embedding)),
+        )
+        conn.commit()
+
+        cursor.execute(
+            "SELECT embedding FROM facial_embeddings WHERE student_id = %s",
+            (student_pk,),
+        )
+        row = cursor.fetchone()
+
+        if row is None or json.loads(row["embedding"]) != dummy_embedding:
+            print("❌ Embedding roundtrip failed — data mismatch")
+            return False
+
+        print("✅ Embedding roundtrip OK (128 dims verified)")
+        return True
+
+    except Exception as e:
+        print(f"❌ Embedding roundtrip failed: {e}")
+        return False
+
+    finally:
+        if student_pk:
+            cursor.execute("DELETE FROM facial_embeddings WHERE student_id = %s", (student_pk,))
+            cursor.execute("DELETE FROM students WHERE id = %s", (student_pk,))
+            conn.commit()
+        cursor.close()
+        conn.close()
+
+
 def test_api_endpoints():
     """Test that new API endpoints exist."""
     print("\n🔗 Testing new API endpoints...")
@@ -137,7 +186,11 @@ def main():
         initial_state = test_initial_state()
         results.append(("Initial State Check", initial_state is not None))
     
-    # Test 4: API Endpoints
+    # Test 4: Embedding Roundtrip  ✅ ADDED
+    if results[-1][1]:
+        results.append(("Embedding Roundtrip", test_embedding_roundtrip()))
+
+    # Test 5: API Endpoints
     results.append(("API Endpoints", test_api_endpoints()))
     
     # Summary
