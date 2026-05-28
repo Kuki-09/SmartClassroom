@@ -4,6 +4,7 @@ import numpy as np
 import torch
 from facenet_pytorch import InceptionResnetV1, MTCNN
 from PIL import Image
+from typing import List
 
 
 class FaceEngine:
@@ -87,3 +88,32 @@ class FaceEngine:
     @staticmethod
     def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
         return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b) + 1e-9))
+    def is_duplicate_embeddings(
+        self,
+        new_embedding: np.ndarray,
+        existing_embedding: List[np.ndarray],
+        threshold: float = 0.8
+    ) -> bool:
+
+        print("Checking duplicate embeddings")
+
+        for embedding in existing_embedding:
+
+            similarity = self.cosine_similarity(
+                new_embedding,
+                embedding
+            )
+
+            print("Similarity:", similarity)
+
+            if similarity >= threshold:
+
+                print("Duplicate face detected")
+                print("Pr Test")
+
+                return True
+
+        return False
+    
+    #TEST CHANGE
+                                                                 
